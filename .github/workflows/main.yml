@@ -1,0 +1,16 @@
+on:
+  issues:
+    types: [opened]
+    
+jobs:
+  tag-a-user:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: devops-actions/issue-comment-tag@v0.1.8
+        name: Tag a user or team in an issue comment
+        with: 
+          issue: ${{ github.event.issue.number }}
+          team: < insert team or user name >
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
