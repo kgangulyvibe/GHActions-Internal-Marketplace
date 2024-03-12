@@ -1,1 +1,1 @@
-# GHActionsSecurity
+# GitHub Actions - Internal Marketplace
