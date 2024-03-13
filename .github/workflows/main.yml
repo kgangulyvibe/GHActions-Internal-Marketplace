@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - uses: devops-actions/issue-comment-tag@v0.1.8
-        name: Tag a user or team in an issue comment
+        name: Tag_a_user_or_team_in_an_issue_comment
         with: 
           issue: ${{ github.event.issue.number }}
           team: kcodeg123
