@@ -13,4 +13,4 @@ jobs:
           team: kcodeg123
           owner: ${{ github.repository_owner }}
           repo: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GH-Internal-Marketplace-TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
