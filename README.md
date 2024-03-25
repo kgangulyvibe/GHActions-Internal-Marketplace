@@ -44,3 +44,10 @@ You can configure the level of access of the new secret but since we have only
               repo: ${{ github.repository }}
               GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
 
+### Step 4. Edit the permissions of GITHUB_TOKEN
+
+[Reference](https://docs.github.com/en/actions/security-guides/automatic-token-authentication).
+
+Under the **Settings** tab of the repository, go to **Actions** > **General** and update the permissions granted to the **GITHUB_TOKEN** under Workflow permissions to **Read and write permissions**.  
+
+![image](https://github.com/kcodeg123/GHActions-Internal-Marketplace/assets/3813135/fbab478f-f362-4dd1-916b-e82315edf900)
