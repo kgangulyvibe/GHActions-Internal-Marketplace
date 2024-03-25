@@ -1,3 +1,21 @@
+# This workflow is triggered when an issue is labeled or unlabeled, or when manually dispatched.
+# It performs a security scan on a GitHub action specified in an issue.
+# The issue must be labeled with 'security-check' or the workflow must be manually dispatched for the workflow to run.
+# The workflow has several jobs that perform various tasks related to the security scan.
+
+
+# The 'enable-dependabot' job enables Dependabot on the forked repository.
+
+# The 'check-action-security-setup' job checks the original repository of the action for a Dependabot configuration file and a CodeQL workflow.
+# It also runs a security scan on any Docker containers used by the action.
+# It uploads a report of the scan and updates the issue with the results.
+
+# The 'codeql' job injects a CodeQL workflow into the forked repository and waits for it to complete.
+# It then gets the results of the CodeQL scan.
+
+# The 'display-results' job displays the results of the security scan and the CodeQL scan in the issue.
+
+
 name: Issue labeled security scan
 
 on:
@@ -15,6 +33,10 @@ env:
   fork-owner: ContosoOrgOpenSource # where to place the forks
     
 jobs:
+
+  # The 'find-action-name' job checks out the repository and finds the GitHub action specified in the issue.
+  # It outputs the details of the action, the owner of the repository where the issue is located, and the issue number.
+  # This information is used in subsequent jobs.
 
   find-action-name:
     runs-on: ubuntu-latest
@@ -93,45 +115,56 @@ jobs:
 
           return result
   
+          
+# The 'get-languages-from-action' job sets up Ruby, installs the 'github-linguist' gem, clones the 'github-actions-requests' repository,
+# and uses 'github-linguist' to analyze the languages used in the action. It outputs the languages used.
+
   get-languages-from-action:
     name: Load action code languages
     runs-on: ubuntu-latest
     outputs:
       languages: ${{ steps.analysis.outputs.languages }}
+
+    # the below steps are needed to get the languages used in the action code. We need to know the languages used to run a CodeQL scan on it
     steps:
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1 # needed to run the linguist gem to analyze the languages used in the action code present in the issue
         name: Setup Ruby
         with:
-          # Not needed with a .ruby-version file
+          # Not needed with a .ruby-version file because the action uses the default version of Ruby (2.7) for the runner image (ubuntu-latest)
           ruby-version: 3.0
-          # runs 'bundle install' and caches installed gems automatically
+          # runs 'bundle install' and caches installed gems automatically between runs with 'bundler-cache: true'
           bundler-cache: true
       - run : gem install github-linguist
-        name: Install linguist gem
+        name: Install linguist gem # git-linguist is a gem that can analyze the languages used in the repository. It is a dependency of the 'get-languages-from-action' job
 
-      - run: git clone https://github.com/rajbos/github-actions-requests.git
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ needs.find-action-name.outputs.request_repo }} # The repository where the action is located (the repository of the action mentioned in the issue)
+          token: ${{ secrets.GITHUB_TOKEN }}
         name: Clone actions repo
 
-      - name: Get linguist analysis
+      - name: Get linguist analysis # This step is needed to get the languages used in the action code
         id: analysis
         run: | 
-         cd github-actions-requests
-         linguist=$(github-linguist --json)
+         cd ${{ needs.find-action-name.outputs.request_repo }}
+         linguist=$(github-linguist --json) // git-linguist is a gem that can analyze the languages used in the repository
          echo "Linquist results:"
          echo $linguist
-         echo "::set-output name=languages::$linguist"
+         echo "::set-output name=languages::$linguist" 
+         
+  # fork the repo so we can run dependabot security scan and a CodeQL scan on the fork   
+  # The 'fork-action-test' job forks the repository of the action to a specified organization for testing.
 
-  # fork the repo so we can run dependabot security scan and a CodeQL scan on the fork        
   fork-action-test:    
     runs-on: ubuntu-latest
     name: Fork action to test organization
     needs: find-action-name
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/github-script@v5  
+    - uses: actions/checkout@v2 # needed to get the action.yml file
+    - uses: actions/github-script@v5 # needed to fork the repo
       name: Check input variables have values     
       with: 
-        github-token: ${{ secrets.GH_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }} # needed to fork the repo
         script: |
           
           // note: owner is now the organization the FORK lives in:
@@ -147,22 +180,22 @@ jobs:
 
           if (owner === null || owner === '') {
             console.log(`owner not found in the outputs of the find-action-name step`)
-            console.log(`owner: [${{ needs.find-action-name.outputs.repo }}]`)
+            console.log(`owner: [${{ needs.find-action-name.outputs.owner }}]`)
             return 1
           }
 
           if (org === null || org === '') {
             console.log(`org not found in the outputs of the find-action-name step`)
-            console.log(`org: [${{ needs.find-action-name.outputs.repo }}]`)
+            console.log(`org: [${{ needs.find-action-name.outputs.owner }}]`)
             return 1
           }
 
           return 0
 
-    - name: Fork the action repository to rajbos-actions-test
-      uses: rajbos-actions/forker@v0.0.1
+    - name: Fork the action repository to env.fork-owner organization # Fork the action repo to the organization for testing
+      uses: wayfair-incubator/forker@v0.0.6
       with:
-        token: ${{ secrets.GH_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         repo: ${{ needs.find-action-name.outputs.name }}
         owner: ${{ needs.find-action-name.outputs.owner }}
         org: ${{ env.fork-owner }}
@@ -179,7 +212,7 @@ jobs:
     steps:
       - uses: actions/github-script@v5       
         with: 
-          github-token: ${{ secrets.GH_TOKEN }}
+            github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             
             // note: owner is now the organization the FORK lives in:

@@ -59,3 +59,80 @@ To get notifications, ensure that your settings are updated to accept notificati
 When on the GitHub page, on the top right, click on your profile and select **Settings**. Go to **Notifications** and update **Participating, @mentions and custom** to notify you via GitHub and/or Email.
 
 ![image](https://github.com/kcodeg123/GHActions-Internal-Marketplace/assets/3813135/c4ceeb61-a0ac-4056-8271-8226dc41bf2b)
+
+### Step 6. Create a new issue template
+
+Create a new issue template for the repository to maintain the requests. 
+
+The `.github/issue_template/request-new-action.yml` file is a GitHub issue template. This file will be used to create a structured format for new issues that are opened in your repository. This helps maintain consistency and clarity in the issues that are created.
+
+Follow these steps to add code to the issue template:
+
+1. Open the `.github/issue_template/request-new-action.yml` file in your repository. If the file doesn't exist, create it.
+
+2. Add the following code to the file.
+
+```yml
+name: Request new action
+description: Request new action to be added to the internal marketplace
+title: "New action request: <name of action here>"
+assignees:
+  - rajbos
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks you for your request. We need some information before we can proceed.
+        After that, the request will be reviewed including an security assesment. Process tracking will happen inside this issue.
+
+        Please tag '@-username' or '@-teamname' to notifiy them in comments.
+  - type: input
+    id: action_name
+    attributes:
+      label: Action name
+      description: The name of the action you want to request in the format owner/repository
+      placeholder: "uses: devops-actions/issue-comment-tag"
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reasons
+      description: Why do you want to request this action?
+      render: shell
+  - type: textarea
+    id: usage
+    attributes:
+      label: Intended usage
+      description: Describe the intended use of the action you want to request, include example repositories if you can.
+      render: markdown
+  - type: checkboxes
+    id: duplication
+    attributes:
+      label: I have checked the internal marketplace for similar actions and couldn't find one that works for us.
+      options:
+        - label: I have checked the internal marketplace first
+          required: true
+```
+
+The above code defines the structure of the issue template. It includes the name, description, title, assignees, and body of the issue. The body includes input fields for the action name, reasons for the request, intended usage, and a checkbox to confirm that the internal marketplace has been checked for similar actions. You can customize the template further by adding more fields or modifying the existing ones to suit your needs.
+
+3. Save the file and commit the changes to your repository.
+
+After you've added the code to the issue template, whenever a new issue is created in your repository, the creator will have the option to use this template. The issue will then follow the structure defined in the template, making it easier for others to understand and respond to the issue.
+
+Remember to always review the issues created in your repository and respond appropriately.
+
+### Step 7. Create a new issue
+
+The steps to create a new issue are as follows:
+
+1. Go to the issues tab in your repository.
+2. Click on the "New issue" button.
+3. Select the "Request new action" template from the list of templates.
+4. Fill in the required information in the issue template.
+5. Click on the "Submit new issue" button to create the issue.
+
+The issue will be created with the structured format defined in the template, making it easier for the request to be reviewed and processed.
+
+### Step 8. Review and process the request

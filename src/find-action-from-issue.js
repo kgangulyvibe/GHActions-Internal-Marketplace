@@ -1,3 +1,20 @@
+// This action will look at the issue body and find the action to run
+// It will return the action name and owner
+// It will also set the output variables for the next steps to use
+
+// Inputs
+// - github: the github object
+// - owner: the owner of the repository
+// - repo: the repository name
+// - issue_number: the issue number to look at
+// - core: the core object
+
+// Outputs
+// - result: 0 if action found, 1 if not found
+// - action: the action to run
+// - owner: the owner of the action
+// - name: the name of the action
+
 module.exports = async ({github, owner, repo, issue_number, core}) => {
 
   console.log(`Looking at this repository: [${owner}/${repo}]`)
