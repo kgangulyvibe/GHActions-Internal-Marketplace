@@ -44,3 +44,18 @@ You can configure the level of access of the new secret but since we have only
               repo: ${{ github.repository }}
               GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
 
+### Step 4. Edit the permissions of GITHUB_TOKEN
+
+[Reference](https://docs.github.com/en/actions/security-guides/automatic-token-authentication).
+
+Under the **Settings** tab of the repository, go to **Actions** > **General** and update the permissions granted to the **GITHUB_TOKEN** under Workflow permissions to **Read and write permissions**.  
+
+![image](https://github.com/kcodeg123/GHActions-Internal-Marketplace/assets/3813135/fbab478f-f362-4dd1-916b-e82315edf900)
+
+### Step 5. Ensure your GitHub notification are ON
+
+To get notifications, ensure that your settings are updated to accept notifications.
+
+When on the GitHub page, on the top right, click on your profile and select **Settings**. Go to **Notifications** and update **Participating, @mentions and custom** to notify you via GitHub and/or Email.
+
+![image](https://github.com/kcodeg123/GHActions-Internal-Marketplace/assets/3813135/c4ceeb61-a0ac-4056-8271-8226dc41bf2b)
