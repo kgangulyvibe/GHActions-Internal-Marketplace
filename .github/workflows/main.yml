@@ -1,3 +1,5 @@
+name: Notify on new issue
+
 on:
   issues:
     types: [opened]
@@ -5,6 +7,7 @@ on:
 jobs:
   tag-a-user:
     runs-on: ubuntu-latest
+    if: (github.repository == 'kcodeg123/GHActions-Internal-Marketplace')
     steps: 
       - uses: devops-actions/issue-comment-tag@v0.1.8
         name: Tag_a_user_or_team_in_an_issue_comment
