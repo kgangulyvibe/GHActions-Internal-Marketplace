@@ -67,7 +67,7 @@ jobs:
          fi
 
     - uses: actions/github-script@v5
-      name: Find action from issue
+      name: Find action from issue # This step finds the action specified in the issue. The outputs consist of the action, owner, and repository name.
       id: get-action
       with:
         result-encoding: string
@@ -190,13 +190,20 @@ jobs:
 
           return 0
 
-    - name: Fork the action repository to env.fork-owner organization # Fork the action repo to the organization for testing
-      uses: wayfair-incubator/forker@v0.0.6
+    - name: Fork the action repository to env.fork-owner organization
+      uses: actions/github-script@v5
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        repo: ${{ needs.find-action-name.outputs.name }}
-        owner: ${{ needs.find-action-name.outputs.owner }}
-        org: ${{ env.fork-owner }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const repo = "${{ needs.find-action-name.outputs.name }}"
+          const owner = "${{ needs.find-action-name.outputs.owner }}"
+          const org = "${{ env.fork-owner }}"
+          const result = await github.repos.createFork({
+            owner,
+            repo,
+            organization: org
+          })
+          console.log(result.data)
         # todo: add a new comment to the issue indication the action of forking the repo over to the other org?
 
   # since dependabot alerts and dependency graph is enabled on the organization level, but that will not be enabled on new forks
