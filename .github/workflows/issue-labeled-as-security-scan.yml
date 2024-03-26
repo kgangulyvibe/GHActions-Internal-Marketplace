@@ -162,6 +162,10 @@ jobs:
           const owner = "${{ needs.find-action-name.outputs.owner }}"
           const org = "${{ env.fork-owner }}"
           
+          // Split the repository name by '@' character to remove the version
+          const repoParts = repoWithVersion.split('@')
+          const repo = repoParts[0]
+
           const result = await github.request('POST /repos/{owner}/{repo}/forks', {
               owner: owner,
               repo: repo,
