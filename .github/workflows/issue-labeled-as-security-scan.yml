@@ -244,8 +244,8 @@ jobs:
     - name: Check-out referenced Action
       run: |
         action=${{ needs.find-action-name.outputs.action }}
-        repo=${action%@*} // This removes the version from the action name to get the repo
-        version=${action#*@} // This gets the version from the action name to checkout the correct version
+        repo=${action%@*}
+        version=${action#*@}
         git clone https://github.com/$repo action
         cd action
         git checkout $version
