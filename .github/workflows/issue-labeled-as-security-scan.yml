@@ -109,6 +109,9 @@ jobs:
           repository: ${{ needs.find-action-name.outputs.request_repo }}
           token: ${{ secrets.PAT_MARKETPLACE }}
     
+      - name: Install linguist gem
+        run: gem install github-linguist
+
       - name: Get linguist analysis
         id: analysis
         run: |
