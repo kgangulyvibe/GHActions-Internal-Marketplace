@@ -219,7 +219,7 @@ jobs:
         with: 
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const owner = "${{ env.fork-owner }}" // note: owner is now the organization the FORK lives in:
+            const owner = "${{ env.fork-owner }}"
             const repo = "${{ needs.find-action-name.outputs.name }}"
 
             // enable dependabot security updates for the repo
@@ -243,9 +243,14 @@ jobs:
 
     - name: Check-out referenced Action
       run: |
-        git clone https://github.com/${{ needs.find-action-name.outputs.action }} action
+        action=${{ needs.find-action-name.outputs.action }}
+        repo=${action%@*} // This removes the version from the action name to get the repo
+        version=${action#*@} // This gets the version from the action name to checkout the correct version
+        git clone https://github.com/$repo action
+        cd action
+        git checkout $version
 
-    - name: Check for .github and workflows folder and run docker scan
+    - name: Check for .github and workflows folder and run docker scan # This step checks for the presence of a .github folder and workflows folder in the action repository.
       id: scan
       run: | 
         chmod +x src/security-scan.sh
