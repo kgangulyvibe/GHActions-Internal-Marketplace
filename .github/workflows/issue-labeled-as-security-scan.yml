@@ -108,7 +108,7 @@ jobs:
       - name: Clone actions repo
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.find-action-name.outputs.name }}
+          repository: ${{ needs.find-action-name.outputs.name.split('@')[0] }}
           token: ${{ secrets.PAT_MARKETPLACE }}
     
       - name: Install linguist gem
