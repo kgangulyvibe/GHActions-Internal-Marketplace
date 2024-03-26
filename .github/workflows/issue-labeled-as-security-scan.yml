@@ -112,6 +112,9 @@ jobs:
       - name: Install linguist gem
         run: gem install github-linguist
 
+      - name: Print request repo
+        run: echo ${{ needs.find-action-name.outputs.request_repo }}
+
       - name: Get linguist analysis
         id: analysis
         run: |
