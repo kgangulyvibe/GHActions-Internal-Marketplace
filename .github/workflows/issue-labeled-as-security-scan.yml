@@ -126,30 +126,29 @@ jobs:
 
     # the below steps are needed to get the languages used in the action code. We need to know the languages used to run a CodeQL scan on it
     steps:
-      - uses: ruby/setup-ruby@v1 # needed to run the linguist gem to analyze the languages used in the action code present in the issue
-        name: Setup Ruby
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          # Not needed with a .ruby-version file because the action uses the default version of Ruby (2.7) for the runner image (ubuntu-latest)
           ruby-version: 3.0
-          # runs 'bundle install' and caches installed gems automatically between runs with 'bundler-cache: true'
           bundler-cache: true
-      - run : gem install github-linguist
-        name: Install linguist gem # git-linguist is a gem that can analyze the languages used in the repository. It is a dependency of the 'get-languages-from-action' job
-
+    
+      - name: Install linguist gem
+        run: gem install github-linguist
+    
+      - name: Clone actions repo
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.find-action-name.outputs.request_repo }} # The repository where the action is located (the repository of the action mentioned in the issue)
+          repository: ${{ needs.find-action-name.outputs.request_repo }}
           token: ${{ secrets.GITHUB_TOKEN }}
-        name: Clone actions repo
-
-      - name: Get linguist analysis # This step is needed to get the languages used in the action code
+    
+      - name: Get linguist analysis
         id: analysis
-        run: | 
-         cd ${{ needs.find-action-name.outputs.request_repo }}
-         linguist=$(github-linguist --json) // git-linguist is a gem that can analyze the languages used in the repository
-         echo "Linquist results:"
-         echo $linguist
-         echo "::set-output name=languages::$linguist" 
+        run: |
+          cd ${{ needs.find-action-name.outputs.request_repo }}
+          linguist=$(github-linguist --json)
+          echo "Linguist results:"
+          echo $linguist
+          echo "::set-output name=languages::$linguist"
          
   # fork the repo so we can run dependabot security scan and a CodeQL scan on the fork   
   # The 'fork-action-test' job forks the repository of the action to a specified organization for testing.
