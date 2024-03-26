@@ -173,7 +173,7 @@ jobs:
               owner: owner,
               repo: repo,
               organization: org,
-              name: repo
+              name: repo,
               default_branch_only: true,
               headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
