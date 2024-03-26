@@ -115,11 +115,16 @@ jobs:
       - name: Get linguist analysis
         id: analysis
         run: |
-          cd ${{ needs.find-action-name.outputs.request_repo }}
-          linguist=$(github-linguist --json)
-          echo "Linguist results:"
-          echo $linguist
-          echo "::set-output name=languages::$linguist"
+          if [ -d "${{ needs.find-action-name.outputs.request_repo }}" ]; then
+              cd "${{ needs.find-action-name.outputs.request_repo }}"
+              linguist=$(github-linguist --json)
+              echo "Linguist results:"
+              echo "$linguist"
+              echo "::set-output name=languages::$linguist"
+          else
+              echo "Error: Repository path not found or invalid"
+              exit 1
+          fi
 
   fork-action-test:    
     runs-on: ubuntu-latest
