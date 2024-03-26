@@ -15,7 +15,6 @@
 
 # The 'display-results' job displays the results of the security scan and the CodeQL scan in the issue.
 
-
 name: Issue labeled security scan
 
 on:
@@ -212,11 +211,9 @@ jobs:
     steps:
       - uses: actions/github-script@v5       
         with: 
-            github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            
-            // note: owner is now the organization the FORK lives in:
-            const owner = "${{ env.fork-owner }}"
+            const owner = "${{ env.fork-owner }}" // note: owner is now the organization the FORK lives in:
             const repo = "${{ needs.find-action-name.outputs.name }}"
 
             // enable dependabot security updates for the repo
