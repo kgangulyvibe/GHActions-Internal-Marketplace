@@ -15,7 +15,7 @@ env:
   fork-owner: ContosoOrgOpenSource # where to place the forks
     
 jobs:
-
+  
   find-action-name:
     runs-on: ubuntu-latest
     if: github.event.label.name == 'security-check' || github.event_name == 'workflow_dispatch'
@@ -91,6 +91,8 @@ jobs:
           return result
 
   get-languages-from-action:
+    # Add a dependency on the find-action-name job
+    needs: find-action-name
     name: Load action code languages
     runs-on: ubuntu-latest
     outputs:
