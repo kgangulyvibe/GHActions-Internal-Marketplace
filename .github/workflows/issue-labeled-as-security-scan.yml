@@ -139,7 +139,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ needs.find-action-name.outputs.request_repo }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_MARKETPLACE }}
     
       - name: Get linguist analysis
         id: analysis
@@ -162,7 +162,7 @@ jobs:
     - uses: actions/github-script@v5 # needed to fork the repo
       name: Check input variables have values     
       with: 
-        github-token: ${{ secrets.GITHUB_TOKEN }} # needed to fork the repo
+        github-token: ${{ secrets.PAT_MARKETPLACE }} # needed to fork the repo
         script: |
           
           // note: owner is now the organization the FORK lives in:
@@ -193,16 +193,27 @@ jobs:
     - name: Fork the action repository to env.fork-owner organization
       uses: actions/github-script@v5
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.PAT_MARKETPLACE }}
         script: |
+          const octokit = new Octokit({
+            auth: github-token
+          })
           const repo = "${{ needs.find-action-name.outputs.name }}"
           const owner = "${{ needs.find-action-name.outputs.owner }}"
           const org = "${{ env.fork-owner }}"
-          const result = await github.repos.createFork({
-            owner,
-            repo,
-            organization: org
-          })
+          
+          
+          const result = await octokit.request('POST /repos/{owner}/{repo}/forks', {
+              owner: owner,
+              repo: repo,
+              organization: org,
+              name: 'Hello-fork',
+              default_branch_only: true,
+              headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+            })
+          
           console.log(result.data)
         # todo: add a new comment to the issue indication the action of forking the repo over to the other org?
 
@@ -215,9 +226,9 @@ jobs:
       - fork-action-test
       - find-action-name
     steps:
-      - uses: actions/github-script@v5       
+      - uses: actions/github-script@v5
         with: 
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_MARKETPLACE }}
           script: |
             const owner = "${{ env.fork-owner }}"
             const repo = "${{ needs.find-action-name.outputs.name }}"
@@ -308,7 +319,7 @@ jobs:
       # todo: clear all other workflows first, to prevent them from running
       id: CodeQL-inject      
       with:      
-        github-token: ${{ secrets.GITHUB_TOKEN }}  
+        github-token: ${{ secrets.PAT_MARKETPLACE }}  
         script: |
            const script = require('./src/inject-codeql.js')
            
@@ -341,7 +352,7 @@ jobs:
       name: Get resuls from CodeQL scan
       id: get-codeql-results
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.PAT_MARKETPLACE }}
         script: |
            const script = require('./src/get-codeql-results.js')
                   
@@ -376,7 +387,7 @@ jobs:
         env:
           debug: false
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_MARKETPLACE }}
           script: |            
             const fs = require('fs');
             const codeql = `${{ needs.codeql.outputs.codeql }}`
