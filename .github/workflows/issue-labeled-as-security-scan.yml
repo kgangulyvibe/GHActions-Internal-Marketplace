@@ -158,7 +158,7 @@ jobs:
       with:
         github-token: ${{ secrets.PAT_MARKETPLACE }}
         script: |
-          const repo = "${{ needs.find-action-name.outputs.name }}"
+          const repoWithVersion = "${{ needs.find-action-name.outputs.name }}"
           const owner = "${{ needs.find-action-name.outputs.owner }}"
           const org = "${{ env.fork-owner }}"
           
