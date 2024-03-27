@@ -114,20 +114,17 @@ jobs:
       - name: Clone actions repo # this is the repo where the action is located
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.find-action-name.outputs.actionOwner }}/${{ needs.find-action-name.outputs.actionName }}
+          repository: ${{ env.fork-owner }}/${{ needs.find-action-name.outputs.actionName }}
           token: ${{ secrets.PAT_MARKETPLACE }}
     
       - name: Install linguist gem
         run: gem install github-linguist
-
-      - name: Print request repo
-        run: echo ${{ needs.find-action-name.outputs.request_repo }}
-
+        
       - name: Get linguist analysis
         id: analysis
         run: |
-          if [ -d "${{ needs.find-action-name.outputs.request_repo }}" ]; then
-              cd "${{ needs.find-action-name.outputs.request_repo }}"
+          if [ -d "${{ needs.find-action-name.outputs.actionName }}" ]; then
+              cd "${{ needs.find-action-name.outputs.actionName }}"
               linguist=$(github-linguist --json)
               echo "Linguist results:"
               echo "$linguist"
