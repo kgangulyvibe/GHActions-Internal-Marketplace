@@ -292,13 +292,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/github-script@v5
-        name: Inject CodeQL workflow into new forked repository # This is the step that injects the CodeQL workflow into the forked repository and runs it to scan the code for security vulnerabilities
+        name: Inject CodeQL workflow into new forked repository
         id: CodeQL-inject
         with:      
           github-token: ${{ secrets.PAT_MARKETPLACE }}  
           script: |
-             const script = require('./src/inject-codeql.js') # This is the script that injects the CodeQL workflow into the forked repository
-             
+             const script = require('./src/inject-codeql.js') 
              const owner = "${{ env.fork-owner }}"
              const repo = "${{ needs.find-action-name.outputs.actionName }}"
 
@@ -309,7 +308,7 @@ jobs:
       
              console.log(`Waiting for CodeQL workflow to complete`)
              
-             const startAndWaitScript = require('./src/start-and-wait-codeql.js') # This is the script that starts the CodeQL workflow and waits for it to complete
+             const startAndWaitScript = require('./src/start-and-wait-codeql.js')
                 
              console.log(`Using this repository: [${owner}/${repo}] with path [${targetPath}] and ref [${ref}]`)
              const { scanResult, run_id } = await startAndWaitScript({github, owner, repo, path: targetPath, ref})
