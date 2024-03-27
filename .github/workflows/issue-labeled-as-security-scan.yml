@@ -21,15 +21,15 @@ jobs:
     if: github.event.label.name == 'security-check' || github.event_name == 'workflow_dispatch'
 
     outputs:
-      actionOwnerNameVersion: ${{ steps.get-action.outputs.actionOwnerNameVersion }} # this is the action to check for security issues in the code. An example output is 'actions/checkout@v2'
+      actionOwnerNameVersion: ${{ steps.get-action.outputs.actionOwnerNameVersion }} # this is the action to check for security issues in the code. An example output is 'actions/checkout@v4'
       actionOwner: ${{ steps.get-action.outputs.actionOwner }}  # this is the owner of the repo to fork
-      actionName: ${{ steps.get-action.outputs.actionName }} # this is the repo to fork. An example output is 'actions/checkout@v2'
+      actionName: ${{ steps.get-action.outputs.actionName }} # this is the repo to fork. An example output is 'actions/checkout@v4'
       request_owner: ${{ steps.get-action.outputs.request_owner }} # this is the owner of the repo where the issue was created
       request_repo: ${{ steps.get-action.outputs.request_repo }} # this is the repo where the issue was created
       request_issue: ${{ steps.get-action.outputs.request_issue }} # this is the issue number where the action was requested
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Find action from dispatch
       id: dispatch_issue_find
@@ -112,10 +112,11 @@ jobs:
           bundler-cache: true
     
       - name: Clone actions repo # this is the repo where the action is located
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.fork-owner }}/${{ needs.find-action-name.outputs.actionName }}
           token: ${{ secrets.PAT_MARKETPLACE }}
+          path: ${{ needs.find-action-name.outputs.actionName }}
     
       - name: Install linguist gem
         run: gem install github-linguist
@@ -124,7 +125,6 @@ jobs:
         id: analysis
         run: | 
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          cd $GITHUB_WORKSPACE
           if [ -d "${{ needs.find-action-name.outputs.actionName }}" ]; then
               cd "${{ needs.find-action-name.outputs.actionName }}"
               linguist=$(github-linguist --json)
@@ -143,7 +143,7 @@ jobs:
     name: Fork action to test organization
     needs: find-action-name
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: actions/github-script@v5
       name: Check input variables have values     
       with: 
@@ -232,7 +232,7 @@ jobs:
     needs: find-action-name
     steps:
     - name: Check-out actions-request repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Check-out referenced Action
       run: |
@@ -295,7 +295,7 @@ jobs:
       codeql: ${{ steps.get-codeql-results.outputs.codeql }}
       codeql_run_id: ${{ steps.CodeQL-inject.outputs.codeql_run_id }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/github-script@v5
         name: Inject CodeQL workflow into new forked repository
         id: CodeQL-inject      
@@ -350,7 +350,7 @@ jobs:
       - check-action-security-setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2      
+      - uses: actions/checkout@v4      
       - uses: actions/download-artifact@v1
         with:
           name: security-scan-result
