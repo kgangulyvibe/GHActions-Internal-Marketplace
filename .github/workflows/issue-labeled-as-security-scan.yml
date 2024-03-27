@@ -21,12 +21,12 @@ jobs:
     if: github.event.label.name == 'security-check' || github.event_name == 'workflow_dispatch'
 
     outputs:
-      action: ${{ steps.get-action.outputs.action }}
-      owner: ${{ steps.get-action.outputs.owner }}
-      name: ${{ steps.get-action.outputs.name }}
-      request_owner: ${{ steps.get-action.outputs.request_owner }}
-      request_repo: ${{ steps.get-action.outputs.request_repo }}
-      request_issue: ${{ steps.get-action.outputs.request_issue }}
+      actionOwnerNameVersion: ${{ steps.get-action.outputs.actionOwnerNameVersion }} # this is the action to check for security issues in the code. An example output is 'actions/checkout@v2'
+      actionOwner: ${{ steps.get-action.outputs.actionOwner }}  # this is the owner of the repo to fork
+      actionName: ${{ steps.get-action.outputs.actionName }} # this is the repo to fork. An example output is 'actions/checkout@v2'
+      request_owner: ${{ steps.get-action.outputs.request_owner }} # this is the owner of the repo where the issue was created
+      request_repo: ${{ steps.get-action.outputs.request_repo }} # this is the repo where the issue was created
+      request_issue: ${{ steps.get-action.outputs.request_issue }} # this is the issue number where the action was requested
 
     steps:
     - uses: actions/checkout@v2
@@ -50,10 +50,15 @@ jobs:
       with:
         result-encoding: string
         script: |
-          const script = require('./src/find-action-from-issue.js')
-                  
-          const owner = context.repo.owner
+          // We will call the script to find the action from the issue body. We will pass the current repo owner and repo name to the script and it will return the target action repo/owner from the issue body
+          const script = require('./src/find-action-from-issue.js') 
+
+          // here context is the context of the workflow which contains the owner of the repo where the workflow is running
+          const owner = context.repo.owner 
+
+          // this is the repo where the workflow is running
           const repo = context.repo.repo
+          
           let issue_number = context.issue.number         
           
           if (issue_number == null) {
@@ -62,7 +67,9 @@ jobs:
             issue_number = `${{ steps.dispatch_issue_find.outputs.issue_number }}`
           }
 
-          let { result, action } = await script({github, owner, repo, issue_number})
+          // here the script is being called with the owner, repo and issue number. It will return the target action repo/owner.
+
+          let { result, action } = await script({github, owner, repo, issue_number}) 
 
           let commentBody
           if (result === 0) {
@@ -91,7 +98,6 @@ jobs:
           return result
 
   get-languages-from-action:
-    # Add a dependency on the find-action-name job
     needs: find-action-name
     name: Load action code languages
     runs-on: ubuntu-latest
@@ -105,20 +111,23 @@ jobs:
           ruby-version: 3.0
           bundler-cache: true
     
-      - name: Clone actions repo
+      - name: Clone actions repo # this is the repo where the action is located
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.find-action-name.outputs.name }}
+          repository: ${{ needs.find-action-name.outputs.actionName }}
           token: ${{ secrets.PAT_MARKETPLACE }}
     
       - name: Install linguist gem
         run: gem install github-linguist
-        
+
+      - name: Print request repo
+        run: echo ${{ needs.find-action-name.outputs.request_repo }}
+
       - name: Get linguist analysis
         id: analysis
         run: |
-          if [ -d "${{ needs.find-action-name.outputs.name }}" ]; then
-              cd "${{ needs.find-action-name.outputs.name }}"
+          if [ -d "${{ needs.find-action-name.outputs.request_repo }}" ]; then
+              cd "${{ needs.find-action-name.outputs.request_repo }}"
               linguist=$(github-linguist --json)
               echo "Linguist results:"
               echo "$linguist"
@@ -139,25 +148,30 @@ jobs:
       with: 
         github-token: ${{ secrets.PAT_MARKETPLACE }}
         script: |
-          const repo = "${{ needs.find-action-name.outputs.name }}"
-          const owner = "${{ needs.find-action-name.outputs.owner }}"
+          // This is the repo to fork
+          const repo = "${{ needs.find-action-name.outputs.actionName }}"
+
+          // This is the owner of the repo to fork
+          const owner = "${{ needs.find-action-name.outputs.actionOwner }}"
+
+          // This is the organization where the fork will be placed
           const org = "${{ env.fork-owner }}"
 
           if (repo === null || repo === '') {
             console.log(`repo not found in the outputs of the find-action-name step`)
-            console.log(`repo: [${{ needs.find-action-name.outputs.name }}]`)
+            console.log(`repo: [${{ needs.find-action-name.outputs.actionName }}]`)
             return 1
           }
 
           if (owner === null || owner === '') {
             console.log(`owner not found in the outputs of the find-action-name step`)
-            console.log(`owner: [${{ needs.find-action-name.outputs.owner }}]`)
+            console.log(`owner: [${{ needs.find-action-name.outputs.actionOwner }}]`)
             return 1
           }
 
           if (org === null || org === '') {
             console.log(`org not found in the outputs of the find-action-name step`)
-            console.log(`org: [${{ needs.find-action-name.outputs.owner }}]`)
+            console.log(`org: [${{ needs.find-action-name.outputs.actionOwner }}]`)
             return 1
           }
 
@@ -168,19 +182,22 @@ jobs:
       with:
         github-token: ${{ secrets.PAT_MARKETPLACE }}
         script: |
-          const repoWithVersion = "${{ needs.find-action-name.outputs.name }}"
-          const owner = "${{ needs.find-action-name.outputs.owner }}"
+    
+          // This is the repo to fork
+          const actionName = "${{ needs.find-action-name.outputs.actionName }}"
+
+          // This is the owner of the repo to fork
+          const actionOwner = "${{ needs.find-action-name.outputs.actionOwner }}"
+
+          // This is the organization where the fork will be placed
           const org = "${{ env.fork-owner }}"
           
-          // Split the repository name by '@' character to remove the version
-          const repoParts = repoWithVersion.split('@')
-          const repo = repoParts[0]
 
-          const result = await github.request('POST /repos/{owner}/{repo}/forks', {
-              owner: owner,
-              repo: repo,
+          const result = await github.request('POST /repos/{actionOwner}/{actionName}/forks', {
+              owner: actionOwner,
+              repo: actionName,
               organization: org,
-              name: repo,
+              name: actionName,
               default_branch_only: true,
               headers: {
                 'X-GitHub-Api-Version': '2022-11-28'
@@ -200,14 +217,14 @@ jobs:
           github-token: ${{ secrets.PAT_MARKETPLACE }}
           script: |
             const owner = "${{ env.fork-owner }}"
-            const repo = "${{ needs.find-action-name.outputs.name }}"
+            const actionName = "${{ needs.find-action-name.outputs.actionName }}"
 
-            await github.request('PUT /repos/{owner}/{repo}/vulnerability-alerts', {
+            await github.request('PUT /repos/{owner}/{actionName}/vulnerability-alerts', {
               owner,
-              repo
+              actionName
             })
 
-            console.log(`Enabled dependabot on the forked repo ${owner}/${repo}. We don't know when those checks are completed. Use another label to trigger the 'dependabot-alerts' workflow`)
+            console.log(`Enabled dependabot on the forked actionName ${owner}/${actionName}. We don't know when those checks are completed. Use another label to trigger the 'dependabot-alerts' workflow`)
   
   check-action-security-setup:
     runs-on: ubuntu-latest
@@ -218,8 +235,10 @@ jobs:
 
     - name: Check-out referenced Action
       run: |
-        action=${{ needs.find-action-name.outputs.action }}
-        repo=${action%@*}
+        action=${{ needs.find-action-name.outputs.actionOwnerNameVersion }}
+
+        // example output of repo is 'actions/checkout' because action%@* removes the version
+        repo=${action%@*} 
         version=${action#*@}
         git clone https://github.com/$repo action
         cd action
@@ -231,7 +250,7 @@ jobs:
         chmod +x src/security-scan.sh
         src/security-scan.sh
       env:
-        ACTION: ${{ needs.find-action-name.outputs.action }}
+        ACTION: ${{ needs.find-action-name.outputs.actionOwnerNameVersion }}
 
     - name: Upload Trivy report
       uses: actions/upload-artifact@v1
@@ -285,7 +304,7 @@ jobs:
              const script = require('./src/inject-codeql.js')
              
              const owner = "${{ env.fork-owner }}"
-             const repo = "${{ needs.find-action-name.outputs.name }}"
+             const repo = "${{ needs.find-action-name.outputs.actionName }}"
 
              console.log(`Using this repository: [${owner}/${repo}]`)
              const languages = `${{ needs.get-languages-from-action.outputs.languages }}`
@@ -316,7 +335,7 @@ jobs:
              const script = require('./src/get-codeql-results.js')
                     
              const owner = "${{ env.fork-owner }}"
-             const repo = "${{ needs.find-action-name.outputs.name }}"
+             const repo = "${{ needs.find-action-name.outputs.actionName }}"
 
              const result = await script({github, owner, repo})
              console.log(`CodeQL scan completed with result: ${JSON.stringify(result)}`)
@@ -362,7 +381,7 @@ jobs:
             const codeql_run_id = ${{ needs.codeql.outputs.codeql_run_id }}
 
             const forkedRepoOwner = "${{ env.fork-owner }}"
-            const forkedRepoName= "${{ needs.find-action-name.outputs.name }}"
+            const forkedRepoName= "${{ needs.find-action-name.outputs.actionName }}"
             const codeql_run_link = `https://github.com/${forkedRepoOwner}/${forkedRepoName}/actions/runs/${codeql_run_id}`
 
             const script = require('./src/combine-results.js')
