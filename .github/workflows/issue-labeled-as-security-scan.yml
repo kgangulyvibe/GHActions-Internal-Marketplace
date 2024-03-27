@@ -192,8 +192,8 @@ jobs:
           // This is the organization where the fork will be placed
           const org = "${{ env.fork-owner }}"
           
-
-          const result = await github.request('POST /repos/{actionOwner}/{actionName}/forks', {
+        
+          const result = await github.request('POST /repos/{owner}/{repo}/forks', {
               owner: actionOwner,
               repo: actionName,
               organization: org,
