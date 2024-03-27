@@ -122,7 +122,7 @@ jobs:
         
       - name: Get linguist analysis
         id: analysis
-        run: |
+        run: | 
           if [ -d "${{ needs.find-action-name.outputs.actionName }}" ]; then
               cd "${{ needs.find-action-name.outputs.actionName }}"
               linguist=$(github-linguist --json)
@@ -131,8 +131,8 @@ jobs:
               echo "::set-output name=languages::$linguist"
           else
               echo "Error: Repository path not found or invalid"
-              // print the directory structure
-              ls -la
+              echo "Current directory: $(pwd)"
+              echo "Contents: $(ls -la)"
               exit 1
           fi
 
