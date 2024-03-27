@@ -131,6 +131,8 @@ jobs:
               echo "::set-output name=languages::$linguist"
           else
               echo "Error: Repository path not found or invalid"
+              // print the directory structure
+              ls -la
               exit 1
           fi
 
