@@ -227,6 +227,8 @@ jobs:
 
             console.log(`Enabled dependabot on the forked actionName ${owner}/${actionName}. We don't know when those checks are completed. Use another label to trigger the 'dependabot-alerts' workflow`)
   
+  # add a multi-line comment to the check-action-security-setup job
+  
   check-action-security-setup:
     runs-on: ubuntu-latest
     needs: find-action-name
@@ -236,14 +238,7 @@ jobs:
 
     - name: Check-out referenced Action
       run: |
-        action=${{ needs.find-action-name.outputs.actionOwnerNameVersion }}
-
-        // example output of repo is 'actions/checkout' because action%@* removes the version
-        repo=${action%@*} 
-        version=${action#*@}
-        git clone https://github.com/$repo action
-        cd action
-        git checkout $version
+        git clone https://github.com/${{ needs.find-action-name.outputs.actionOwner }}/${{ needs.find-action-name.outputs.actionName }} action
 
     - name: Check for .github and workflows folder and run docker scan
       id: scan
@@ -297,12 +292,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/github-script@v5
-        name: Inject CodeQL workflow into new forked repository
-        id: CodeQL-inject      
+        name: Inject CodeQL workflow into new forked repository # This is the step that injects the CodeQL workflow into the forked repository and runs it to scan the code for security vulnerabilities
+        id: CodeQL-inject
         with:      
           github-token: ${{ secrets.PAT_MARKETPLACE }}  
           script: |
-             const script = require('./src/inject-codeql.js')
+             const script = require('./src/inject-codeql.js') # This is the script that injects the CodeQL workflow into the forked repository
              
              const owner = "${{ env.fork-owner }}"
              const repo = "${{ needs.find-action-name.outputs.actionName }}"
@@ -314,7 +309,7 @@ jobs:
       
              console.log(`Waiting for CodeQL workflow to complete`)
              
-             const startAndWaitScript = require('./src/start-and-wait-codeql.js')
+             const startAndWaitScript = require('./src/start-and-wait-codeql.js') # This is the script that starts the CodeQL workflow and waits for it to complete
                 
              console.log(`Using this repository: [${owner}/${repo}] with path [${targetPath}] and ref [${ref}]`)
              const { scanResult, run_id } = await startAndWaitScript({github, owner, repo, path: targetPath, ref})
