@@ -114,7 +114,7 @@ jobs:
       - name: Clone actions repo # this is the repo where the action is located
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.find-action-name.outputs.actionName }}
+          repository: ${{ needs.find-action-name.outputs.actionOwner }}/${{ needs.find-action-name.outputs.actionName }}
           token: ${{ secrets.PAT_MARKETPLACE }}
     
       - name: Install linguist gem
