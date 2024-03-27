@@ -45,7 +45,7 @@ jobs:
            echo "::set-output name=issue_number::${issue_number}"
          fi
 
-    - uses: actions/github-script@v5
+    - uses: actions/github-script@v7.0.1
       id: get-action
       with:
         result-encoding: string
@@ -144,7 +144,7 @@ jobs:
     needs: find-action-name
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/github-script@v5
+    - uses: actions/github-script@v7.0.1
       name: Check input variables have values     
       with: 
         github-token: ${{ secrets.PAT_MARKETPLACE }}
@@ -179,7 +179,7 @@ jobs:
           return 0
 
     - name: Fork the action repository to env.fork-owner organization
-      uses: actions/github-script@v5
+      uses: actions/github-script@v7.0.1
       with:
         github-token: ${{ secrets.PAT_MARKETPLACE }}
         script: |
@@ -213,7 +213,7 @@ jobs:
       - fork-action-test
       - find-action-name
     steps:
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v7.0.1
         with: 
           github-token: ${{ secrets.PAT_MARKETPLACE }}
           script: |
@@ -291,7 +291,7 @@ jobs:
       codeql_run_id: ${{ steps.CodeQL-inject.outputs.codeql_run_id }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v7.0.1
         name: Inject CodeQL workflow into new forked repository
         id: CodeQL-inject
         with:      
@@ -321,7 +321,7 @@ jobs:
              
              console.log(`::set-output name=codeql_run_id::'${run_id}'`)
 
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v7.0.1
         name: Get resuls from CodeQL scan
         id: get-codeql-results
         with:
@@ -351,7 +351,7 @@ jobs:
           path: security-scan-result
      
       - name: Display results
-        uses: actions/github-script@v5
+        uses: actions/github-script@v7.0.1
         env:
           DEBUG: false
         with:
