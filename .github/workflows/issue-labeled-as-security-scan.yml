@@ -123,6 +123,9 @@ jobs:
       - name: Get linguist analysis
         id: analysis
         run: | 
+          // print $GITHUB_WORKSPACE value with a print statement
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          cd $GITHUB_WORKSPACE
           if [ -d "${{ needs.find-action-name.outputs.actionName }}" ]; then
               cd "${{ needs.find-action-name.outputs.actionName }}"
               linguist=$(github-linguist --json)
