@@ -12,7 +12,7 @@ on:
         default: '11'
     
 env: 
-  fork-owner: ContosoOrgOpenSource # where to place the forks
+  fork-owner: msft-teamawesome # where to place the forks
     
 jobs:
   
@@ -279,6 +279,7 @@ jobs:
       with:
         name: security-scan-result
         path: result.md
+       
 
   codeql:
     runs-on: ubuntu-latest
