@@ -10,7 +10,19 @@ on:
         description: 'Issue number to work with'
         required: true
         default: '11'
-    
+      homedrive:
+        description: 'The home drive on the machine'
+        required: true
+        default: '/home'
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
 env: 
   fork-owner: msft-teamawesome # where to place the forks
     
