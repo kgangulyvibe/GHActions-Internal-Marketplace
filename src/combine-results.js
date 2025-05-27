@@ -16,7 +16,7 @@ module.exports = async ({github, owner, repo, issue_number, codeql_run_link, cod
   // Read security scan results
   let securityScanContent = '';
   try {
-    securityScanContent = fs.readFileSync(securityScanResult, 'utf8');
+    securityScanContent = await fs.promises.readFile(securityScanResult, 'utf8');
     console.log('Security scan results loaded successfully');
   } catch (error) {
     console.log(`Error reading security scan file: ${error}`);
